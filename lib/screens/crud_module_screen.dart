@@ -66,6 +66,16 @@ class _CrudModuleScreenState extends State<CrudModuleScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant CrudModuleScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.endpoint != widget.endpoint) {
+      _items = [];
+      _error = null;
+      _load();
+    }
+  }
+
+  @override
   void dispose() {
     _search.dispose();
     super.dispose();

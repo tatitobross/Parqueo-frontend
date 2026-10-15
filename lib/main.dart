@@ -46,7 +46,16 @@ class _ShellState extends State<Shell> {
   @override
   Widget build(BuildContext context) {
     final user = widget.auth.user!;
-    return Scaffold(appBar: AppBar(title: Text(_title)), drawer: _Drawer(user: user, onOpen: _open, onLogout: widget.auth.logout, auth: widget.auth), body: _content);
+    return Scaffold(
+      appBar: AppBar(title: Text(_title)),
+      drawer: _Drawer(user: user, onOpen: _open, onLogout: widget.auth.logout, auth: widget.auth),
+      // Cada opción del menú debe tener un estado independiente. Sin esta llave
+      // Flutter conserva la lista del módulo abierto anteriormente.
+      body: KeyedSubtree(
+        key: ValueKey('parking-module-$_title'),
+        child: _content ?? const SizedBox.shrink(),
+      ),
+    );
   }
 }
 
@@ -85,6 +94,7 @@ class _Drawer extends StatelessWidget {
   ])));
 
   static CrudModuleScreen _clientes(AuthService auth, bool readOnly) => CrudModuleScreen(
+    key: const ValueKey('clientes-module'),
     auth: auth, endpoint: 'clientes', title: 'Clientes',
     itemTitle: (x) => '${x['nombre']} ${x['apellido']}',
     itemSubtitle: (x) => '${x['documento']} · ${x['telefono']}',
@@ -102,6 +112,7 @@ class _Drawer extends StatelessWidget {
   );
 
   static CrudModuleScreen _espacios(AuthService auth, bool readOnly) => CrudModuleScreen(
+    key: const ValueKey('espacios-module'),
     auth: auth, endpoint: 'espacios', title: 'Espacios',
     itemTitle: (x) => x['codigo'].toString(),
     itemSubtitle: (x) => '${x['zona']} · ${x['estado']}',
@@ -123,6 +134,7 @@ class _Drawer extends StatelessWidget {
   );
 
   static CrudModuleScreen _tarifas(AuthService auth, bool readOnly) => CrudModuleScreen(
+    key: const ValueKey('tarifas-module'),
     auth: auth, endpoint: 'tarifas', title: 'Tarifas',
     itemTitle: (x) => x['nombre'].toString(),
     itemSubtitle: (x) => 'L ${x['precio_hora']} por hora',
@@ -139,6 +151,7 @@ class _Drawer extends StatelessWidget {
   );
 
   static CrudModuleScreen _usuarios(AuthService auth) => CrudModuleScreen(
+    key: const ValueKey('usuarios-module'),
     auth: auth, endpoint: 'usuarios', title: 'Usuarios',
     itemTitle: (x) => '${x['name'] ?? 'Usuario'} (${x['username'] ?? x['id']})',
     itemSubtitle: (x) => '${x['role'] ?? 'Sin rol'} · ${x['status'] ?? 'Sin estado'}',
