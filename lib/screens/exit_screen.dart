@@ -1,0 +1,10 @@
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
+
+class ExitScreen extends StatefulWidget { final AuthService auth; const ExitScreen({super.key, required this.auth}); @override State<ExitScreen> createState() => _ExitScreenState(); }
+class _ExitScreenState extends State<ExitScreen> { List<dynamic> _items = []; bool _busy = true; String? _message; @override void initState() { super.initState(); _load(); }
+ Future<void> _load() async { try { final result = await widget.auth.api.get('/entradas?activas=true&por_pagina=100'); if (mounted) setState(() { _items = result['data'] as List; _message = null; }); } on ApiException catch (e) { if (mounted) setState(() => _message = e.message); } finally { if (mounted) setState(() => _busy = false); } }
+ Future<void> _exit(Map<String, dynamic> item) async { setState(() => _busy = true); try { final result = await widget.auth.api.post('/entradas/${item['id']}/salida', {}); if (mounted) { final total = result['data']['monto_total']; setState(() => _message = 'Salida registrada. Total: L $total'); await _load(); } } on ApiException catch (e) { if (mounted) setState(() => _message = e.message); } finally { if (mounted) setState(() => _busy = false); } }
+ @override Widget build(BuildContext context) => _busy && _items.isEmpty ? const Center(child: CircularProgressIndicator()) : Column(children: [if (_message != null) Padding(padding: const EdgeInsets.all(12), child: Text(_message!)), Expanded(child: _items.isEmpty ? const Center(child: Text('No hay entradas activas.')) : ListView.builder(itemCount: _items.length, itemBuilder: (_, i) { final e = Map<String, dynamic>.from(_items[i] as Map); final vehicle = Map<String, dynamic>.from(e['vehiculo'] as Map); final space = Map<String, dynamic>.from(e['parqueo'] as Map); return ListTile(leading: const Icon(Icons.directions_car), title: Text('${vehicle['placa']} · ${space['codigo']}'), subtitle: Text('Entrada: ${e['entrada_en']}'), trailing: FilledButton(onPressed: _busy ? null : () => _exit(e), child: const Text('Salida'))); }))]);
+}
