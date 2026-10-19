@@ -6,8 +6,9 @@ import '../services/auth_service.dart';
 class VehicleScreen extends StatefulWidget {
   final AuthService auth;
   final bool readOnly;
+  final bool canCreate;
 
-  const VehicleScreen({super.key, required this.auth, this.readOnly = false});
+  const VehicleScreen({super.key, required this.auth, this.readOnly = false, this.canCreate = true});
 
   @override
   State<VehicleScreen> createState() => _VehicleScreenState();
@@ -131,7 +132,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              if (!widget.readOnly) FilledButton.icon(onPressed: () => _openForm(), icon: const Icon(Icons.add), label: const Text('Nuevo')),
+              if (widget.canCreate) FilledButton.icon(onPressed: () => _openForm(), icon: const Icon(Icons.add), label: const Text('Nuevo')),
             ],
           ),
         ),

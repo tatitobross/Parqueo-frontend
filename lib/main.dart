@@ -41,7 +41,14 @@ class _ShellState extends State<Shell> {
   String _title = 'Dashboard';
   Widget? _content;
   @override
-  void initState() { super.initState(); _content = DashboardScreen(auth: widget.auth); }
+  void initState() {
+    super.initState();
+    final user = widget.auth.user!;
+    _title = user.isEntryOperator ? 'Vehículos' : 'Dashboard';
+    _content = user.isEntryOperator
+        ? VehicleScreen(auth: widget.auth, readOnly: true, canCreate: true)
+        : DashboardScreen(auth: widget.auth);
+  }
   void _open(String title, Widget screen) { setState(() { _title = title; _content = screen; }); Navigator.pop(context); }
   @override
   Widget build(BuildContext context) {
@@ -69,18 +76,21 @@ class _Drawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Drawer(child: SafeArea(child: ListView(children: [
     UserAccountsDrawerHeader(accountName: Text(user.greeting), accountEmail: Text('${user.email}\n${user.role ?? "Sin rol"}'), currentAccountPicture: const CircleAvatar(child: Icon(Icons.person))),
-    _item(context, Icons.dashboard_outlined, 'Dashboard', DashboardScreen(auth: auth)),
-    const Divider(),
-    _item(context, Icons.people_outline, 'Clientes', _clientes(auth, user.isReadOnly)),
-    _item(context, Icons.directions_car_outlined, 'Vehículos', VehicleScreen(auth: auth, readOnly: user.isReadOnly)),
-    _item(context, Icons.login, 'Entradas', ListScreen(auth: auth, endpoint: 'entradas?activas=true', title: 'Entradas')),
-    _item(context, Icons.logout, 'Salidas', ListScreen(auth: auth, endpoint: 'salidas', title: 'Salidas')),
-    if (!user.isReadOnly) ...[
+    if (!user.isEntryOperator) ...[
+      _item(context, Icons.dashboard_outlined, 'Dashboard', DashboardScreen(auth: auth)),
       const Divider(),
+    ],
+    if (!user.isEntryOperator) _item(context, Icons.people_outline, 'Clientes', _clientes(auth, user.isReadOnly)),
+    _item(context, Icons.directions_car_outlined, 'Vehículos', VehicleScreen(auth: auth, readOnly: user.isReadOnly || user.isEntryOperator, canCreate: !user.isReadOnly)),
+    if (!user.isEntryOperator) ...[
+      _item(context, Icons.login, 'Entradas', ListScreen(auth: auth, endpoint: 'entradas?activas=true', title: 'Entradas')),
+      _item(context, Icons.logout, 'Salidas', ListScreen(auth: auth, endpoint: 'salidas', title: 'Salidas')),
+    ],
+    if (!user.isReadOnly) ...[
       _item(context, Icons.add_road, 'Registrar entrada', EntryScreen(auth: auth)),
       _item(context, Icons.exit_to_app, 'Registrar salida', ExitScreen(auth: auth)),
     ],
-    if (user.isAdmin || user.isReadOnly || user.role == 'Operador') ...[
+    if (!user.isEntryOperator && (user.isAdmin || user.isReadOnly)) ...[
       const Divider(),
       _item(context, Icons.local_parking_outlined, 'Espacios', _espacios(auth, !user.isAdmin)),
       _item(context, Icons.sell_outlined, 'Tarifas', _tarifas(auth, !user.isAdmin)),

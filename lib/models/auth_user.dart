@@ -10,5 +10,6 @@ class AuthUser {
   factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(id: json['id'] as int, username: json['username'] as String, name: json['name'] as String, email: json['email'] as String, status: json['status'] as String, role: json['role'] as String?);
   bool get isAdmin => role == 'Administrador';
   bool get isReadOnly => role == 'Consulta';
+  bool get isEntryOperator => role == 'Operador' || role == 'Operador de entrada';
   String get greeting => 'Bienvenido $name';
 }
